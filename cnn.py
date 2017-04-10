@@ -27,19 +27,19 @@ def cnn_model_fn(features, labels, mode):
       activation=tf.nn.relu)
 
   # Pooling Layer #1
-  pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
+  pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[9, 9], strides=9)
 
   # Convolutional Layer #2 and Pooling Layer #2
   conv2 = tf.layers.conv2d(
       inputs=pool1,
-      filters=64,
-      kernel_size=[5, 5],
+      filters=192,
+      kernel_size=[23, 23],
       padding="same",
       activation=tf.nn.relu)
-  pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
+  pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[9, 9], strides=9)
 
   # Dense Layer
-  pool2_flat = tf.reshape(pool2, [-1, 7 * 7 * 64])
+  pool2_flat = tf.reshape(pool2, [-1, 32 * 32 * 192])
   dense = tf.layers.dense(inputs=pool2_flat, units=16384, activation=tf.nn.relu)
   dropout = tf.layers.dropout(
       inputs=dense, rate=0.4, training=mode == learn.ModeKeys.TRAIN)
@@ -52,7 +52,7 @@ def cnn_model_fn(features, labels, mode):
 
   # Calculate Loss (for both TRAIN and EVAL modes)
   if mode != learn.ModeKeys.INFER:
-    onehot_labels = tf.one_hot(indices=tf.cast(labels, tf.int32), depth=10)
+    onehot_labels = tf.one_hot(indices=tf.cast(labels, tf.int32), depth=5)
     loss = tf.losses.softmax_cross_entropy(
         onehot_labels=onehot_labels, logits=logits)
 
@@ -75,6 +75,7 @@ def cnn_model_fn(features, labels, mode):
   # Return a ModelFnOps object
   return model_fn_lib.ModelFnOps(
       mode=mode, predictions=predictions, loss=loss, train_op=train_op)
+
 
 
 if __name__ == "__main__":
